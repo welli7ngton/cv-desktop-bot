@@ -6,8 +6,8 @@ from pyautogui import click, screenshot
 
 
 class CVisionBot:
-    def __init__(self, resources_base_path: str, *, default_sleep: int = 5):
-        self.resources_base_path = f'{resources_base_path}/images'
+    def __init__(self, resources_base_path: str, *, images_path: str = 'images', default_sleep: int = 5):
+        self.resources_base_path = f'{resources_base_path}/{images_path}'
         self.target = f'{self.resources_base_path}/target'
         self.output = f'{self.resources_base_path}/output'
         self.screenshot = f'{self.resources_base_path}/screenshot'
