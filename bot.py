@@ -5,9 +5,6 @@ from time import sleep
 from pyautogui import click, screenshot
 
 
-# from utils.cv2_utils import get_item_location
-
-
 class CVisionBot:
     def __init__(self, resources_base_path: str, *, default_sleep: int = 5):
         self.resources_base_path = f'{resources_base_path}/images'
