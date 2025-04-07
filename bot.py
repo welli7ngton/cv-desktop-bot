@@ -1,6 +1,6 @@
 import cv2
 
-from os import makedirs
+from os import makedirs, remove
 from time import sleep
 from pyautogui import click, screenshot
 
@@ -50,7 +50,7 @@ class CVisionBot:
 
             # Salva a imagem com o retângulo desenhado
             cv2.imwrite(output_path, img_color)
-            print(f"Imagem salva em: {output_path}")
+            print(f"Imagem de saída salva em: {output_path}")
 
             return center_x, center_y
 
@@ -73,3 +73,4 @@ class CVisionBot:
         )
         click(x, y)
         sleep(self.default_sleep)
+        remove(screenshot_path)
