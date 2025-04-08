@@ -54,7 +54,7 @@ class CVisionBot:
 
             return center_x, center_y
 
-    def find_and_click(self, step: int, name: str):
+    def find_and_click(self, step: int, name: str) -> tuple[int, int]:
         """
         Tira um screenshot, encontra a posição do item na tela e clica nele.
         Args:
@@ -74,3 +74,4 @@ class CVisionBot:
         click(x, y)
         sleep(self.default_sleep)
         remove(screenshot_path)
+        return x, y
