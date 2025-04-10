@@ -18,7 +18,7 @@ class CVisionBot:
             makedirs(folder, exist_ok=True)
 
     @classmethod
-    def _get_item_location(cls, template_path: str, screenshot_path: str, output_path: str):
+    def _get_item_location(cls, template_path: str, screenshot_path: str, output_path: str, precisao: float = 0.7):
         img = cv2.imread(screenshot_path, cv2.IMREAD_GRAYSCALE)
         assert img is not None, "file could not be read, check with os.path.exists()"
         img_color = cv2.imread(screenshot_path)
@@ -28,33 +28,29 @@ class CVisionBot:
         assert template is not None, "file could not be read, check with os.path.exists()"
         w, h = template.shape[::-1]
 
-        methods = ['TM_CCOEFF']
+        method = cv2.TM_CCOEFF_NORMED  # método que dá resultado de 0 a 1 (ideal pra comparar precisão)
+        res = cv2.matchTemplate(img, template, method)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-        for methd in methods:
-            method = getattr(cv2, methd)
+        print(f"Precisão encontrada: {max_val}")
 
-            # Aplica a correspondência de template
-            res = cv2.matchTemplate(img, template, method)
-            _, _, min_loc, max_loc = cv2.minMaxLoc(res)
+        if max_val < precisao:
+            print(f"Imagem não encontrada com precisão mínima de {precisao}")
+            return None, None
 
-            # Escolhe a localização baseada no método
-            top_left = max_loc if methd in ['TM_CCOEFF', 'TM_CCOEFF_NORMED'] else min_loc
+        top_left = max_loc
+        bottom_right = (top_left[0] + w, top_left[1] + h)
+        center_x = top_left[0] + w // 2
+        center_y = top_left[1] + h // 2
 
-            # Calcula o centro do retângulo detectado
-            center_x = top_left[0] + w // 2
-            center_y = top_left[1] + h // 2
+        # Desenha o retângulo
+        cv2.rectangle(img_color, top_left, bottom_right, (0, 255, 0), 2)
+        cv2.imwrite(output_path, img_color)
+        print(f"Imagem de saída salva em: {output_path}")
 
-            # Desenha o retângulo na imagem original colorida
-            bottom_right = (top_left[0] + w, top_left[1] + h)
-            cv2.rectangle(img_color, top_left, bottom_right, (0, 255, 0), 2)
+        return center_x, center_y
 
-            # Salva a imagem com o retângulo desenhado
-            cv2.imwrite(output_path, img_color)
-            print(f"Imagem de saída salva em: {output_path}")
-
-            return center_x, center_y
-
-    def find_and_click(self, step: int, name: str) -> tuple[int, int]:
+    def find_and_click(self, step: int, name: str, precisao: float = 0.7) -> tuple[int, int]:
         """
         Tira um screenshot, encontra a posição do item na tela e clica nele.
         Args:
@@ -70,8 +66,14 @@ class CVisionBot:
             fr"{self.target}\{step}_{name}.png",
             screenshot_path,
             fr"{self.output}\{step}_.png",
+            precisao
         )
-        click(x, y)
-        sleep(self.default_sleep)
+
+        if x is not None and y is not None:
+            click(x, y)
+            sleep(self.default_sleep)
+        else:
+            raise Exception('Clique ignorado por falta de precisao.')
+
         remove(screenshot_path)
         return x, y
